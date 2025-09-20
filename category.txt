@@ -1,0 +1,3 @@
+['cereals and tubers' 'miscellaneous food' 'non-food' 'oil and fats'
+ 'pulses and nuts' 'meat, fish and eggs' 'milk and dairy'
+ 'vegetables and fruits']

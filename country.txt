@@ -1,0 +1,8 @@
+['AFG' 'ARM' 'BDI' 'BFA' 'BGD' 'CAF' 'CIV' 'CMR' 'COG' 'DJI' 'DOM' 'DZA'
+ 'ECU' 'EGY' 'ETH' 'GIN' 'GNB' 'IND' 'IRN' 'IRQ' 'JOR' 'KEN' 'KGZ' 'KHM'
+ 'LAO' 'LBN' 'LBR' 'LBY' 'LKA' 'MDA' 'MLI' 'MMR' 'MOZ' 'MRT' 'MWI' 'NER'
+ 'NGA' 'NPL' 'PAK' 'PHL' 'PSE' 'RWA' 'SDN' 'SEN' 'SLE' 'SOM' 'SSD' 'SYR'
+ 'TJK' 'TLS' 'TUR' 'TZA' 'UGA' 'UKR' 'VEN' 'YEM' 'ZMB' 'ZWE' 'BEN' 'BTN'
+ 'COD' 'COL' 'GMB' 'HTI' 'IDN' 'LSO' 'SWZ' 'TCD' 'GHA' 'MDG' 'ARG' 'BLR'
+ 'BOL' 'CPV' 'FJI' 'GTM' 'HND' 'MEX' 'MNG' 'NAM' 'NIC' 'PAN' 'PER' 'PRY'
+ 'SLV' 'TGO' 'VNM' 'ZAF' 'AGO' 'CHN' 'KAZ' 'RUS' 'THA']

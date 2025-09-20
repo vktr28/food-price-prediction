@@ -1,0 +1,143 @@
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+import numpy as np
+import warnings
+import joblib
+
+warnings.filterwarnings("ignore")
+
+### File uploading and combining ###
+
+files = [
+    "2025.csv",
+    "2024.csv",
+    "2023.csv",
+    "2022.csv",
+    "2021.csv",
+    "2020.csv",
+    ]
+
+dfs = [pd.read_csv(file) for file in files]
+data = pd.concat(dfs, ignore_index=True)
+
+categories = data.columns.unique()
+data = data[~data.astype(str).apply(lambda row: row.str.contains("#date", case=False, na=False)).any(axis=1)]
+data = data.dropna()
+
+### Sorting the data ###
+
+for category in categories:
+    data[category] = pd.to_numeric(data[category], errors="ignore")
+    if data[category].dtype == "object":
+        try:
+            data[category] = pd.to_datetime(data[category], errors="ignore")
+        except:
+            pass
+
+data["date"] = data["date"].dt.year
+data["state"] = data['admin1'].map(lambda x: x.lower())
+data["region"] = data['admin2'].map(lambda x: x.lower())
+
+### I removed those after checking the correlation matrix results and left those ones that matter the most ###
+data = data.drop(columns = ['admin1', 'admin2', 'priceflag', 'pricetype', 'currency', 'price', 'market_id', 'unit', 'commodity_id'])
+data['price'] = data['usdprice']
+data['country'] = data['countryiso3']
+data = data.drop(columns = ['usdprice', 'countryiso3'])
+tolower = ['market', 'commodity', 'category']
+for cat in tolower:
+    data[cat] = data[cat].map(lambda x: x.lower())
+
+### After cleaning up the dataset we need to prepare it for model training. Let's convert the categorical values into the numeric ones ###
+
+to_encode = ["commodity", 'state', 'region', 'market', 'category', "country"]
+for item in to_encode:
+    data[f'{item}_encoded'] = data.groupby(['date', item])["price"].transform('mean')
+data_numeric = data.drop(columns = ['country', 'state', 'region', 'commodity', 'category', 'market'])
+
+commodity = input("Commodity - ")
+if commodity.lower().strip() not in data['commodity'].unique():
+    print('There is no such a commodity, try again!')
+else:
+    commodity = commodity.lower().strip()
+
+country = input("3-char country code - (For ex. BLR, RUS, ARG) - ")
+if country.upper().strip() not in data['country'].unique():
+    print('There is no such a country, try again!')
+else:
+    country = country.upper().strip()
+
+year = int(input("Year - "))
+if type(year) != int:
+    print("Error! Try again!")
+
+state = input("State - ")
+if state.lower().strip() not in data['state'].unique():
+    print('There is no such a state, try again!')
+else:
+    state = state.lower().strip()
+
+region = input("Region - ")
+if region.lower().strip() not in data['region'].unique():
+    print('There is no such a region, try again!')
+else:
+    region = region.lower().strip()
+
+category = input("Category - ")
+if category.lower().strip() not in data['category'].unique():
+    print('There is no such a category, try again!')
+else:
+    category = category.lower().strip()
+
+market = input("Market - ")
+if market.lower().strip() not in data['market'].unique():
+    print('There is no such a market, try again!')
+else:
+    market = market.lower().strip()
+
+latitude = float(input("Latitude - "))
+if type(latitude) != float:
+    print("Error! Try again!")
+    
+longitude = float(input("Longitude - "))
+if type(longitude) != float:
+    print("Error! Try again!")
+
+user_input = pd.DataFrame([{
+    'country': country,
+    'state': state,
+    'date': year,
+    'region': region,
+    'commodity': commodity,
+    'category': category,
+    'market': market,
+    'latitude': latitude,
+    'longitude': longitude
+    }])
+
+for item in to_encode:
+    mean_map = data.groupby(['date', item])['price'].transform('mean')
+    user_input[f"{item}_encoded"] = user_input.apply(lambda x: mean_map.get((x["date"], x[item]), data["price"].mean()), axis=1)
+
+X = data_numeric.drop(columns = 'price')
+y = data['price']
+
+model = RandomForestRegressor(
+    n_estimators=10,   
+    max_depth=15,
+    min_samples_split=10,
+    min_samples_leaf=5,
+    n_jobs=-1,
+    random_state=42
+)
+
+feature_cols = [f"{c}_encoded" for c in to_encode] + ["latitude", "longitude"]
+X = data[feature_cols]
+y = data["price"]
+
+model.fit(X, y)
+predicted_price = model.predict(user_input[feature_cols])[0]
+print(f"Predicted price: {predicted_price:.2f} USD")
+
